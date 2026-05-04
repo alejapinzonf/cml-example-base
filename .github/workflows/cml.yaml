@@ -1,23 +1,18 @@
 name: model-training
-
 on:
   push:
     branches:
       - main
-
 jobs:
   run:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.10"
-
       - name: Setup CML
         uses: iterative/setup-cml@v2
 
@@ -27,7 +22,6 @@ jobs:
           pip install dvc
           pip install "dvc[gdrive]"
           pip install -r requirements.txt
-
       - name: Configure DVC Google Drive service account
         env:
           GDRIVE_CREDENTIALS_DATA: ${{ secrets.GDRIVE_CREDENTIALS_DATA }}
@@ -36,15 +30,12 @@ jobs:
           echo "$GDRIVE_CREDENTIALS_DATA" > .dvc/tmp/gdrive-sa.json
           dvc remote modify --local gdriveremote gdrive_use_service_account true
           dvc remote modify --local gdriveremote gdrive_service_account_json_file_path .dvc/tmp/gdrive-sa.json
-
       - name: Pull data from DVC remote
         run: |
           dvc pull -v
-
       - name: Train model
         run: |
           python train.py
-
       - name: Create CML report
         env:
           REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
